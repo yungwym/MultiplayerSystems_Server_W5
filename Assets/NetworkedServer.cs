@@ -70,9 +70,85 @@ public class NetworkedServer : MonoBehaviour
     {
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
 
-       
+        string[] csv = msg.Split(',');
+
+        int signifier = int.Parse(csv[0]);
+
+        if (signifier == ClientToServerSignifiers.CreateAccount)
+        {
+            Debug.Log("Create Account");
+
+            string n = csv[1];
+            string p = csv[2];
+            bool nameInUse = false;
+
+            foreach (PlayerAccount pa in playerAccounts)
+            {
+                if (pa.name == n)
+                {
+                    nameInUse = true;
+                    break;
+                }
+            }
+
+            if (nameInUse)
+            {
+                SendMessageToClient(ServerToClientSignifiers.AccountCreationFailed + "", id);
+            }
+            else
+            {
+                PlayerAccount newPlayerAccount = new PlayerAccount(n, p);
+                playerAccounts.AddLast(newPlayerAccount);
+                SendMessageToClient(ServerToClientSignifiers.AccountCreationComplete + "", id);
+            }
+
+            //If not, create new account, add to list and save to list
+            //Send Client success or failure
+        }
+        else if (signifier == ClientToServerSignifiers.Login)
+        {
+            Debug.Log("Login to Account");
+
+            //Check if player account already exists
+            //Send client success/failure
+
+        }
     }
 
   
+}
+
+
+
+
+public class PlayerAccount
+{
+    public string name;
+    public string password;
+
+    public PlayerAccount(string Name, string Password)
+    {
+        name = Name;
+        password = Password;
+    }
+}
+
+
+public static class ClientToServerSignifiers
+{
+    public const int CreateAccount = 1;
+
+    public const int Login = 2;
+}
+
+public static class ServerToClientSignifiers
+{
+    public const int LoginComplete = 1;
+
+    public const int LoginFailed = 2;
+
+    public const int AccountCreationComplete = 3;
+
+    public const int AccountCreationFailed = 4;
 }
 
